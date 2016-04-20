@@ -1,0 +1,114 @@
+# Introduction To Programming - Exercises
+# Kenny Chong
+# 4/18/2016
+
+1. Use 'each' method of Array to iterate over [1,2,3,4,5,6,7,8,9,10], and print out each value.
+Solution: [1,2,3,4,5,6,7,8,9,10].each {|v| puts v}
+
+2. Same as above, but only print values greater than 5.
+Solution: [1,2,3,4,5,6,7,8,9,10].each {|v| if v > 5 puts v}
+
+3. Using same array from #2, use select method to extract all odd numbers into new array.
+Solution: [1,2,3,4,5,6,7,8,9,10].select { |v| v % 2 != 0}
+
+4. Append "11" to end of original array. Prepend "0" to the beginning.
+Solution: x = [1,2,3,4,5,6,7,8,9,10]
+          x.push(11)
+          x.unshift(0)
+
+5. Get rid of "11". And append a "3".
+Solution: x.pop
+          x.push(3)
+
+6. Get rid of duplicates without specifically removing any one value.
+Solution: [1,1,2,3,5,6,6].uniq # returns a new array without duplicates
+
+7. What is the difference between an Array and a Hash?
+Solution: An uses ordered integer-based indexes. A hash uses key indexes.
+          
+
+8. Create a Hash using both Ruby syntax styles.
+hash = {:name => 'bob'} # old ruby version
+hash = {name: 'bob'}    # new ruby version
+
+9. Suppose you have a hash h = {a:1, b:2, c:3, d:4}
+  1. Get the value of key `:b`.
+  Solution: h[:b]
+  
+  2. Add to this hash the key:value pair `{e:5}`
+  Solution: h[:e] = 5
+
+  3. Remove all key:value pairs whose value is less than 3.5
+  Solution: h.delete_if {|k,v| v < 3.5}
+
+10. Can has values be arrays? Can you have an array of hashes?
+Solution: Hash values can be arrays: h = {1 : []}
+          Can can an array of hashes: g = [{a: 1}, {b: 2}]
+
+11. Look at several Rails/Ruby online API Sources and say which one you like best.
+Solution: ruby.docs.org
+
+12. Given the following data structures, write a program that moves the information
+from an array into the empty hash that applies to correct person.
+
+contact_data = [["joe@email.com", "123 Main st.", "555-123-4567"],
+            ["sally@email.com", "404 Not Found Dr.", "123-234-3454"]]
+
+contacts = {"Joe Smith" => {}, "Sally Johnson" => {}}
+
+Solution: contacts["Joe Smith"][:email] = contact_data[0][0]
+          contacts["Joe Smith"][:address] = contact_data[0][1]
+          contacts["Joe Smith"][:number] = contact_data[0][2]
+
+          # Do same for Sally Johnson
+
+13. Using the hash you created from previous exercise, demonstrate how you would access
+Joe's email and Sally's phone number?
+Solution: contacts["Joe Smith"][:email]
+          contacts["Sally Johnson"][:phone]
+
+14. In exercise 12, we manually set contacts hash value one-by-one. Now, programmatically loop
+or iterate over contacts hash from exercise 12 and populate associated data from contact_data entry.
+Solution: contacts.each do |k,v|
+            item_data = contact_data.shift
+            v[:email] = item_data[0]
+            v[:address] = item_data[1]
+            v[:phone] = item_data[2]
+          end
+
+15. Use Ruby's Array method delete_if and String method start_with? to delete all of the words that
+beging with an "s" in the following array.
+arr = ['snow', 'winter', 'ice', 'slippery', 'salted roads', 'white trees']
+
+Then recreate the arr and get rid of all of the words that start with "s" or starts with "w".
+
+Solution: 
+          arr.delete_if do |s|
+            s.start_with?("s")
+          end
+
+          arr.delete_if do |s|
+            s.start_with?("s", "w")
+          end
+
+16. Take the following array:
+a = ['white snow', 'winter wonderland', 'melting ice', 'slippery sidewalk', 'salted roads', 'white trees']
+
+and turn it into a new array that consists of strings containing one word. (ex: ["white snow", etc..] -> ["white", "snow"])
+
+Solution: a.map do |s|
+            s.split
+          end.flatten
+
+
+17. What will the following program output?
+hash1 = {shoes: "nike", "hat" => "adidas", :hoodle => true}
+hash2 = {"hat" => "adidas", :shoes => "nike", hoodle: true}
+
+if hash1 == hash2
+  puts "These hashes are the same"
+else
+  puts "These hashes are not the same!"
+end
+
+Solution: "These hashes are the same"

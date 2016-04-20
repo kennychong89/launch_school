@@ -1,0 +1,61 @@
+# Introduction To Programming - Methods
+# Launch School
+# Kenny Chong
+# 4/18/2016
+
+1. Write a program that prints a greeting message. This program should contain a method called greeting
+that takes a name as its parameter and returns a string 
+
+Solution:
+def greeting(name)
+  "Hello " + name + "!"
+end
+
+puts greeting("Kevin")
+
+2. What do the following expressions evaluate to?
+  1. x = 2
+  Solution: 2
+
+  2. puts x = 2
+  Solution: nil
+
+  3. p name = "Joe"
+  Solution: "Joe"
+
+  4. four = "four"
+  Solution: "four"
+
+  5. print something = "nothing"
+  Solution: nil
+
+3. Write a program that includes a method called multiply that takes two arguments and returns the product of the two numbers.
+Solution: 
+def multiply(number1, number2)
+  number1 * number2
+end
+
+puts multiply(3,4)
+
+4. What will the following code print to the screen?
+def scream(words)
+  words = words + "!!!!"
+  return     # nothing below is printed
+  puts words
+end
+
+scream("Yippeee")
+Solution: doesnt print anything because of return
+
+5. Edit the method above so that it does print word on the screen. What does it print now?
+Solution:
+def scream_again(words)
+  words = words + "!!!!"
+  puts words
+end
+
+scream_again("Yippeee") # returns nil since puts is the last line returned
+
+6. What does the following error message tell you?
+   ArgumentError: wrong number of arguments (1 for 2)
+Solution: You did not pass enough arguments to calculate_products. calculate_products needed 2 arguments but you gave it one.
