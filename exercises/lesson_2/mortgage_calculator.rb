@@ -68,8 +68,10 @@ def ask_user_for_loan_amount
     prompt("Please enter the loan amount (principal). Max loan is 1 million dollars:")
     loan_amount = gets.chomp
 
-    break unless !valid_number?(loan_amount) || !negative_number?(loan_amount) || more_than_one_million_dollars?(loan_amount)
-    prompt("Invalid loan amount: \n - loan must be a non-negative number \n - loan cannot exceed 1 million dollars \n")
+    break unless !valid_number?(loan_amount) || negative_number?(loan_amount) || more_than_one_million_dollars?(loan_amount)
+    prompt("Invalid loan amount:\n" \
+       "- loan must be a non-negative number\n" \
+       "- loan cannot exceed 1 million dollars\n")
   end
   # return loan amount in float representation rounded to 2 decimal places
   loan_amount.to_f.round(2)
@@ -95,7 +97,6 @@ def ask_user_to_continue?
   loop do
     prompt("Do you want to calculate another mortgage?\n (type 'y' to calculate again or 'n' to exit)")
     answer = gets.chomp
-  
     break unless !answer.downcase.start_with?('y', 'n')
     prompt("Please type 'y' to start over or 'n' finish.")
   end
@@ -111,8 +112,12 @@ def start_calculator
     loan_duration_years = ask_user_for_loan_duration
 
     monthly_interest_rate = convert_apr_to_monthly_interest_rate(apr)
-    loan_duration_months = convert_loan_duration_in_years_to_months(loan_duration_years)
-    monthly_payment = calculate_monthly_payment(loan_amount, monthly_interest_rate, loan_duration_months)
+    loan_duration_months =
+      convert_loan_duration_in_years_to_months(loan_duration_years)
+    monthly_payment =
+      calculate_monthly_payment(loan_amount,
+                                monthly_interest_rate,
+                                loan_duration_months)
 
     prompt("Your monthly payment is: #{monthly_payment}")
     continue = ask_user_to_continue?
