@@ -45,8 +45,7 @@ def pick_random_hero
 end
 
 def user_typed_shortcut?(shortcut)
-  shortcut_lower = shortcut.downcase
-  VALID_HEROES.key?(shortcut_lower)
+  VALID_HEROES.key?(shortcut.downcase)
 end
 
 def ask_user_for_name
@@ -73,17 +72,25 @@ def ask_user_to_continue?(user_name)
   answer
 end
 
-def determine_winner(player_1_name, player_1_hero, player_2_name, player_2_hero)
-  winner = ''
+def determine_winner_and_loser(player_1_name, player_1_hero, player_2_name, player_2_hero)
+  results = { winner_name: '', winner_hero: '', loser_name: '', loser_hero: '' }
+
   if win?(player_1_hero, player_2_hero)
-    winner = player_1_name
-    display_match_results(player_1_hero, player_2_hero) # don't know where to put this
+    results = mark_winner_and_loser(player_1_name, player_1_hero, player_2_name, player_2_hero)
   elsif win?(player_2_hero, player_1_hero)
-    winner = player_2_name
-    display_match_results(player_2_hero, player_1_hero)
+    results = mark_winner_and_loser(player_2_name, player_2_hero, player_1_name, player_1_hero)
   end
 
-  winner
+  results
+end
+
+def mark_winner_and_loser(winner_name, winner_hero, loser_name, loser_hero)
+  results = {}
+  results[:winner_name] = winner_name
+  results[:winner_hero] = winner_hero
+  results[:loser_name] = loser_name
+  results[:loser_hero] = loser_hero
+  results
 end
 
 def display_players_selections(player_1_name, player_1_hero, player_2_name, player_2_hero)
@@ -108,24 +115,17 @@ end
 
 def win?(player_1_hero, player_2_hero)
   is_winner = case player_1_hero
-              when 'rock'
-                rock_wins_against?(player_2_hero)
-              when 'paper'
-                paper_wins_against?(player_2_hero)
-              when 'scissors'
-                scissors_wins_against?(player_2_hero)
-              when 'spock'
-                spock_wins_against?(player_2_hero)
-              when 'lizard'
-                lizard_wins_against?(player_2_hero)
+              when 'rock' then rock_wins_against?(player_2_hero)
+              when 'paper'then paper_wins_against?(player_2_hero)
+              when 'scissors' then scissors_wins_against?(player_2_hero)
+              when 'spock' then spock_wins_against?(player_2_hero)
+              when 'lizard' then lizard_wins_against?(player_2_hero)
               end
   is_winner
 end
 
 def update_score(winner_name, score_card)
-  if score_card.key?(winner_name)
-    score_card[winner_name] += 1
-  end
+  score_card[winner_name] += 1 if score_card.key?(winner_name)
 end
 
 def display_users_score(score_card)
@@ -172,10 +172,10 @@ def run_round(current_round, p1_name, p1_hero, p2_name, p2_hero)
   invoke_countdown # optional simulation
   prompt("RESULTS AT ROUND #{current_round}:")
   display_players_selections(p1_name, p1_hero, p2_name, p2_hero)
-  winner_name = determine_winner(p1_name, p1_hero, p2_name, p2_hero)
-  display_congrats_to_winner(winner_name, current_round)
-
-  winner_name
+  results = determine_winner_and_loser(p1_name, p1_hero, p2_name, p2_hero)
+  display_match_results(results[:winner_hero], results[:loser_hero])
+  display_congrats_to_winner(results[:winner_name], current_round)
+  results[:winner_name]
 end
 
 def run_game_loop(user_name, computer_name)
