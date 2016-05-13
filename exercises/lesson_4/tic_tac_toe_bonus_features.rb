@@ -1,8 +1,9 @@
+# frozen_string_literal: true
 # Tic Tac Toe with bonus features
 # Kenny Chong
 # 05/04/2016
 require 'yaml'
-YAML_FILE = YAML.load_file('tic_tac_toe_bonus_features.yml')
+MESSAGES = YAML.load_file('tic_tac_toe_bonus_features.yml')
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
@@ -20,7 +21,7 @@ def prompt(msg)
 end
 
 def clear_screen
-  system('clear')
+  system('clear') || system('cls')
 end
 
 def empty_squares(brd)
@@ -49,7 +50,7 @@ def player_places_piece!(brd)
     square = gets.chomp.to_i
 
     break if empty_squares(brd).include?(square)
-    prompt YAML_FILE['invalid_square_to_pick']
+    prompt MESSAGES['invalid_square_to_pick']
   end
 
   mark_square_at_location!(brd, square, PLAYER_MARKER)
@@ -124,15 +125,15 @@ def find_danger_square_location(brd)
 end
 
 def a_winning_line?(brd, line)
-  brd.values_at(*line).count(COMPUTER_MARKER) == 2
+  count_markers_in_a_line(brd, line, COMPUTER_MARKER) == 2
 end
 
 def a_danger_line?(brd, line)
-  brd.values_at(*line).count(PLAYER_MARKER) == 2
+  count_markers_in_a_line(brd, line, USER_MARKER) == 2
 end
 
 def line_has_empty_square?(brd, line)
-  brd.values_at(*line).count(INITIAL_MARKER) == 1
+  count_markers_in_a_line(brd, line, INITIAL_MARKER) == 1
 end
 
 def line_get_empty_square(brd, line)
@@ -142,11 +143,15 @@ def line_get_empty_square(brd, line)
 end
 #########################################
 
+def count_markers_in_a_line(brd, line, marker)
+  brd.values_at(*line).count(marker)
+end
+
 def detect_winner(brd)
   WINNING_LINES.each do |line|
-    if brd.values_at(*line).count(PLAYER_MARKER) == 3
+    if count_markers_in_a_line(brd, line, PLAYER_MARKER) == 3
       return PLAYER_NAME
-    elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
+    elsif count_markers_in_a_line(brd, line, COMPUTER_MARKER) == 3
       return COMPUTER_NAME
     end
   end
@@ -173,7 +178,7 @@ def display_game_winner(score_card)
 end
 
 def play_again?
-  prompt YAML_FILE['play_again']
+  prompt MESSAGES['play_again']
   answer = gets.chomp
 
   answer
@@ -183,7 +188,7 @@ def display_current_round_results(board)
   if someone_won?(board)
     prompt "#{detect_winner(board)} won the round!"
   else
-    prompt YAML_FILE['tie']
+    prompt MESSAGES['tie']
   end
 end
 
@@ -202,12 +207,12 @@ end
 def ask_player_to_choose
   choice = ''
   loop do
-    prompt YAML_FILE['who_goes_first']
+    prompt MESSAGES['who_goes_first']
     choice = gets.chomp
 
     break unless choice != "1" && choice != "2"
 
-    prompt YAML_FILE['invalid_choice_to_go_first']
+    prompt MESSAGES['invalid_choice_to_go_first']
   end
 
   if choice == "2"
@@ -218,7 +223,7 @@ def ask_player_to_choose
 end
 
 def create_display_board
-  YAML_FILE['display_board'].clone
+  MESSAGES['display_board'].clone
 end
 
 def alternate(current_player)
@@ -281,10 +286,9 @@ def run_game_loop
     display_board(board)
     display_current_round_results(board)
     display_score(score_card)
-    break if reached_max_points?(winner_name, score_card, winning_match_point) ||
-             reached_max_points?(winner_name, score_card, winning_match_point)
+    break if reached_max_points?(winner_name, score_card, winning_match_point)
 
-    prompt YAML_FILE['start_next_round']
+    prompt MESSAGES['start_next_round']
     gets.chomp
   end
 end
@@ -297,7 +301,7 @@ def start_game
     break unless continue.downcase.start_with?('y')
   end
 
-  prompt YAML_FILE['thanks_for_playing']
+  prompt MESSAGES['thanks_for_playing']
 end
 
 start_game
