@@ -22,7 +22,7 @@ def prompt(msg)
 end
 
 def clear_screen
-  system('clear')
+  system('clear') || system('cls')
 end
 
 def empty_squares(brd)
@@ -95,6 +95,7 @@ def semi_smart_computer_places_piece!(brd)
   if winning_square
     mark_square_at_location!(brd, winning_square, COMPUTER_MARKER)
   elsif danger_square
+    binding.pry
     mark_square_at_location!(brd, danger_square, COMPUTER_MARKER)
   elsif square_is_empty(brd, 5)
     mark_square_at_location!(brd, 5, COMPUTER_MARKER)
