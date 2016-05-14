@@ -3,6 +3,7 @@
 # Kenny Chong
 # 05/04/2016
 require 'yaml'
+require 'pry'
 MESSAGES = YAML.load_file('tic_tac_toe_bonus_features.yml')
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
@@ -21,7 +22,7 @@ def prompt(msg)
 end
 
 def clear_screen
-  system('clear') || system('cls')
+  system('clear')
 end
 
 def empty_squares(brd)
@@ -129,7 +130,7 @@ def a_winning_line?(brd, line)
 end
 
 def a_danger_line?(brd, line)
-  count_markers_in_a_line(brd, line, USER_MARKER) == 2
+  count_markers_in_a_line(brd, line, PLAYER_MARKER) == 2
 end
 
 def line_has_empty_square?(brd, line)
@@ -277,7 +278,7 @@ end
 
 def run_game_loop
   score_card = initialize_score_card
-  winning_match_point = 5
+  winning_match_point = WINNING_MATCH_POINT
   loop do
     board = initialize_board
     play_round(board)
