@@ -53,8 +53,8 @@ end
 
 def play_a_round_of_21
   deck = create_deck_and_shuffle
-  player_hand = create_hand(2, deck)
-  dealer_hand = create_hand(2, deck)
+  player_hand = create_hand(INITIAL_CARDS_TO_DRAW, deck)
+  dealer_hand = create_hand(INITIAL_CARDS_TO_DRAW, deck)
   score_tracker = { PLAYER_NAME => 0, DEALER_NAME => 0 }
   update_score(score_tracker, PLAYER_NAME, calculate_hand(player_hand))
   update_score(score_tracker, DEALER_NAME, calculate_hand(dealer_hand))
