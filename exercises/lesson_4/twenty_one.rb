@@ -1,21 +1,104 @@
 # frozen_string_literal: true
 # Twenty-One
 # Kenny Chong
+# 05/30/2016
 require 'pry'
-SUITS = ['Clubs', 'Diamonds', 'Hearts', 'Spades'].freeze
-VALUES = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King'].freeze
+SUITS = ['H', 'D', 'S', 'C']
+VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 MAX_SCORE_BEFORE_BUST = 21
 MAX_SCORE_BEFORE_DEALER_HOLDS = 17
-PLAYER_NAME = "Player"
-DEALER_NAME = "Dealer"
-HIT = '1'
-STAY = '2'
-INITIAL_CARDS_TO_DRAW = 2
 WINNING_ROUND_POINT = 5
-ACE_RANKING_HIGH = 11
-ACE_RANKING_LOW = 1
-FACE_RANKING = 10
-PAUSE_DURATION = 0.5
+
+def clear_screen
+  system('clear') || system('cls')
+end
+
+def prompt(msg)
+  puts "=> #{msg}"
+end
+
+def initialize_deck
+  SUITS.product(VALUES).shuffle
+end
+
+def calculate_total(cards, total)
+  values = cards.map { |card| card[1] }
+  sum = 0
+  values.each do |value|
+    if value == "A"
+      sum += 11
+    elsif value.to_i == 0 # J, Q, K
+      sum += 10
+    else
+      sum += value.to_i
+    end
+  end
+  correct_for_aces(cards, sum)
+end
+
+def correct_for_aces(cards, sum)
+  cards.select { |card| card[1] == "A" }.count.times do
+    sum -= 10 if sum > 21
+  end
+  sum
+end
+
+def busted?(total)
+  total > 21
+end
+
+# :tie, :dealer, :player, :dealer_busted, :player_busted
+def detect_result(dealer_total, guest_total)
+  if busted?(guest_total)
+    :guest_busted
+  elsif busted?(dealer_total)
+    :dealer_busted
+  elsif dealer_total < guest_total
+    :guest
+  elsif dealer_total > guest_total
+    :dealer
+  else
+    :tie
+  end
+end
+
+def display_result(dealer_cards, dealer_total, guest_cards, guest_total)
+  result = detect_result(dealer_total, guest_total)
+
+  case result
+  when :guest_busted
+    prompt "Guest busted! Dealer wins!"
+  when :dealer_busted
+    prompt "Dealer busted! You win!"
+  when :guest
+    prompt "Guest win!"
+  when :dealer
+    prompt "Dealer wins!"
+  when :tie
+    prompt "It's a tie!"
+  end
+  puts "=============="
+  prompt "Dealer has #{dealer_cards}, for a total of: #{dealer_total}"
+  prompt "Guest has #{guest_cards}, for a total of: #{guest_total}"
+  puts "=============="
+end
+
+def get_winner_name(guest_total, dealer_total)
+  result = detect_result(dealer_total, guest_total)
+  case result
+  when :guest_busted || :dealer
+    return "Dealer"
+  when :dealer_busted || :guest
+    return "Guest"
+  end
+end
+
+def play_again?
+  puts "-------------"
+  prompt "Do you want to play again? (y or n)"
+  answer = gets.chomp
+  answer.downcase.start_with?('y')
+end
 
 def start_game
   prompt "Let's play 21!"
@@ -23,280 +106,103 @@ def start_game
     run_game_loop
     prompt "Do you want to play again? ('y' or 'n')."
     decision = gets.chomp
-    break unless decision.downcase.start_with?('y') 
+    break unless decision.downcase.start_with?('y')
   end
   prompt "Thank you for playing! Goodbye!"
 end
 
-def prompt(msg)
-  puts("=> #{msg}")
-end
-
 def run_game_loop
-  rounds_won_card = { PLAYER_NAME => 0, DEALER_NAME => 0 }
-  rounds = 1
+  guest_name = "Guest"
+  dealer_name = "Dealer"
+  guest_rounds_won = 0
+  dealer_rounds_won = 0
   loop do
-    prompt "ROUND #{rounds}"
-    winner_name = play_a_round_of_21
-    if there_is_winner(winner_name)
-      give_winner_a_round_point(rounds_won_card, winner_name)
-      break if game_over(rounds_won_card, winner_name)
-    end
-    rounds += 1
-    display_round_scores(rounds_won_card)
-    prompt "Press Enter to play next round."
-    gets.chomp
+    winner = play_round(guest_name, dealer_name)
+    if winner == guest_name then guest_rounds_won += 1 end
+    if winner == dealer_name then dealer_rounds_won += 1 end
+    prompt "Rounds Won By #{guest_name}: #{guest_rounds_won}"
+    prompt "Rounds Won By #{dealer_name}: #{dealer_rounds_won}"
+    break if won_game?(guest_rounds_won) || won_game?(dealer_rounds_won)
+    prompt "Press Enter play next round."
+    gets.chomp 
     clear_screen
   end
-  display_round_scores(rounds_won_card)
 end
 
-def play_a_round_of_21
-  deck = create_deck_and_shuffle
-  player_hand = create_hand(INITIAL_CARDS_TO_DRAW, deck)
-  dealer_hand = create_hand(INITIAL_CARDS_TO_DRAW, deck)
-  score_tracker = { PLAYER_NAME => 0, DEALER_NAME => 0 }
-  update_score(score_tracker, PLAYER_NAME, calculate_hand(player_hand))
-  update_score(score_tracker, DEALER_NAME, calculate_hand(dealer_hand))
-  display_person_hand_and_score(player_hand, PLAYER_NAME, score_tracker)
-  display_person_hand_and_score(dealer_hand, DEALER_NAME, score_tracker)
-  player_turn(player_hand, dealer_hand, score_tracker, deck)
-  dealer_turn(dealer_hand, player_hand, score_tracker, deck)
-  display_round_results(score_tracker)
-  get_winner_name(score_tracker) unless tied?(score_tracker)
-end
+def play_round(guest_name, dealer_name)
+  deck = initialize_deck
+  guest_cards = []
+  dealer_cards = []
+  guest_total = pre_round_setup(guest_cards, deck)
+  dealer_total = pre_round_setup(dealer_cards, deck)
+  prompt "Dealer has #{dealer_cards[0]} and ?"
+  prompt "You have: #{guest_cards[0]} and #{guest_cards[1]}, for a total of #{guest_total}."
 
-def create_deck_and_shuffle
-  VALUES.product(SUITS).shuffle!
-end
-
-def create_hand(cards_to_draw, deck)
-  hand = []
-  cards_to_draw.times do
-    card = draw_card!(deck)
-    add_card_to_hand(hand, card)
+  guest_total = guest_turn(guest_cards, guest_total, deck)
+  if !busted?(guest_total)
+    dealer_total = dealer_turn(dealer_cards, dealer_total, deck)
   end
-  hand
+  display_result(dealer_cards, dealer_total, guest_cards, guest_total)
+  get_winner_name(guest_total, dealer_total)
 end
 
-def add_card_to_hand(hand, card)
-  hand.push(card)
-end
-
-def draw_card!(deck)
-  deck.shift
-end
-
-def calculate_hand(hand)
-  score = 0
-  hand.each do |card|
-    card_ranking = get_card_ranking(card)
-    score += card_ranking
+def pre_round_setup(cards, deck)
+  total = 0
+  2.times do
+    card = deck.pop
+    cards << card
+    total = calculate_total(cards, total)
   end
-
-  if busted?(score) && how_many_aces_in_hand?(hand) > 0
-    score = adjust_score_for_aces(hand, score)
-  end
-  score
+  total
 end
 
-def get_card_ranking(card)
-  card_value = get_card_value(card)
-  card_ranking = if card_is_an_ace_value?(card_value)
-                   ACE_RANKING_HIGH
-                 elsif card_is_a_face_value?(card_value)
-                   FACE_RANKING
-                 else
-                   convert_card_value_to_its_numerical_ranking(card_value)
-                 end
-  card_ranking
-end
-
-def get_card_value(card)
-  card[0]
-end
-
-def card_is_an_ace_value?(card_value)
-  card_value == 'Ace'
-end
-
-def card_is_a_face_value?(card_value)
-  card_value == 'Jack' ||
-    card_value == 'Queen' ||
-    card_value == 'King'
-end
-
-def convert_card_value_to_its_numerical_ranking(card_value)
-  card_value.to_i
-end
-
-def busted?(score)
-  score > MAX_SCORE_BEFORE_BUST
-end
-
-def how_many_aces_in_hand?(hand)
-  hand.each.select do |card|
-    card_is_an_ace_value?(get_card_value(card))
-  end.count
-end
-
-def adjust_score_for_aces(hand, score)
-  updated_score = score
-  points_to_deduct = ACE_RANKING_HIGH - ACE_RANKING_LOW
-  how_many_aces_in_hand?(hand).times do
-    updated_score -= points_to_deduct unless !busted?(updated_score)
-  end
-  updated_score
-end
-
-def update_score(score_tracker, person_name, new_score)
-  score_tracker[person_name] = new_score
-end
-
-def player_turn(player_hand, dealer_hand, score_tracker, deck)
-  prompt "#{PLAYER_NAME} TURN"
+def guest_turn(guest_cards, guest_total, deck)
   loop do
-    decision = ask_player_to_choose_an_option
-    break unless decision == HIT
-    deal(player_hand, PLAYER_NAME, score_tracker, deck)
-    display_person_hand_and_score(player_hand, PLAYER_NAME, score_tracker)
-    display_person_hand_and_score(dealer_hand, DEALER_NAME, score_tracker)
-    prompt "\n"
-    break unless !busted?(get_score(score_tracker, PLAYER_NAME))
-  end
-end
-
-def ask_player_to_choose_an_option
-  decision = ''
-  loop do
-    prompt "Press #{HIT} to hit. Press #{STAY} to stay."
-    decision = gets.chomp
-    break unless decision != HIT && decision != STAY
-    prompt "Invalid Choice. Press #{HIT} to hit or #{STAY} to stay."
-  end
-  decision
-end
-
-def deal(hand, name, score_tracker, deck)
-  invoke_delay_when_drawing_a_card
-  card = draw_card!(deck)
-  add_card_to_hand(hand, card)
-  update_score(score_tracker, name, calculate_hand(hand))
-  display_person_name_and_card_drawn(name, card)
-end
-
-def invoke_delay_when_drawing_a_card
-  prompt "Drawing a card..."
-  sleep(PAUSE_DURATION)
-end
-
-def display_person_name_and_card_drawn(name, card)
-  prompt "#{name}: Drew a #{get_card_value(card)} of #{get_card_suit(card)}."
-end
-
-def display_person_hand_and_score(hand, name, score_tracker)
-  prompt "#{name}: #{show_cards_in_hand(hand)} | Score: #{score_tracker[name]}"
-end
-
-def show_cards_in_hand(hand)
-  hand.map do |card|
-    card_value = get_card_value(card)
-    card_ranking = get_card_ranking(card)
-    if card_is_an_ace_value?(card_value) || card_is_a_face_value?(card_value)
-      card_value + "(#{card_ranking})"
-    else
-      get_card_value(card)
+    choice = hit_or_stay?
+    if choice == 'h'
+      card = deck.pop
+      guest_cards << card
+      guest_total = calculate_total(guest_cards, guest_total)
+      prompt "You chose to hit!"
+      prompt "Your cards are now: #{guest_cards}"
+      prompt "Your total is now: #{guest_total}"
     end
-  end.join(', ')
+    break if choice == 's' || busted?(guest_total) 
+  end
+  if !busted?(guest_total)
+    prompt "Guest stayed at #{guest_total}"
+  end
+  guest_total
 end
 
-def get_score(score_tracker, person_name)
-  score_tracker[person_name]
-end
-
-def dealer_wins?(score_tracker)
-  player_score = get_score(score_tracker, PLAYER_NAME)
-  dealer_score = get_score(score_tracker, DEALER_NAME)
-  busted?(player_score) || dealer_score > player_score
-end
-
-def dealer_turn(dealer_hand, player_hand, score_tracker, deck)
-  dealer_score = get_score(score_tracker, DEALER_NAME)
-  return unless !dealer_wins?(score_tracker) && !dealer_reached_hit_limit?(dealer_score)
-  prompt "#{DEALER_NAME} TURN"
+def dealer_turn(dealer_cards, dealer_total, deck)
   loop do
-    deal(dealer_hand, DEALER_NAME, score_tracker, deck)
-    display_person_hand_and_score(player_hand, PLAYER_NAME, score_tracker)
-    display_person_hand_and_score(dealer_hand, DEALER_NAME, score_tracker)
-    prompt "\n"
-    break unless !dealer_stops?(score_tracker) && !busted?(dealer_score)
+    break if busted?(dealer_total) || dealer_total >= 17
+    prompt "Dealer hits!"
+    card = deck.pop
+    dealer_cards << deck.pop
+    dealer_total = calculate_total(dealer_cards, dealer_total)
+    prompt "Dealer's cards are now: #{dealer_cards}"
   end
-end
-
-def dealer_stops?(score_tracker)
-  player_score = get_score(score_tracker, PLAYER_NAME)
-  dealer_score = get_score(score_tracker, DEALER_NAME)
-  dealer_score >= player_score || dealer_reached_hit_limit?(dealer_score)
-end
-
-def dealer_reached_hit_limit?(dealer_score)
-  dealer_score >= MAX_SCORE_BEFORE_DEALER_HOLDS
-end
-
-def display_round_results(score_tracker)
-  player_score = get_score(score_tracker, PLAYER_NAME)
-  dealer_score = get_score(score_tracker, DEALER_NAME)
-  prompt "Final score is - #{PLAYER_NAME}: #{player_score}, #{DEALER_NAME}: #{dealer_score}"
-  if player_score == dealer_score
-    prompt "It's a tie!"
-  elsif busted?(dealer_score)
-    prompt "#{PLAYER_NAME} have won! #{DEALER_NAME} has busted."
-  elsif busted?(player_score)
-    prompt "#{DEALER_NAME} has won! #{PLAYER_NAME} has busted"
-  elsif dealer_score > player_score
-    prompt "#{DEALER_NAME} has won!"
-  else
-    prompt "#{PLAYER_NAME} have won!"
+  if !busted?(dealer_total)
+    prompt "Dealer stayed at #{dealer_total}"
   end
-  prompt "\n"
+  dealer_total
 end
 
-def tied?(score_tracker)
-  score_tracker[PLAYER_NAME] == score_tracker[DEALER_NAME]
-end
-
-def get_winner_name(score_tracker)
-  if dealer_wins?(score_tracker)
-    return DEALER_NAME
+def hit_or_stay?
+  guest_turn = ''
+  loop do
+    prompt "Would you like to (h)it or (s)tay?"
+    guest_turn = gets.chomp.downcase
+    break if ['h', 's'].include?(guest_turn)
+    prompt "Sorry, must enter 'h' or 's'."
   end
-  PLAYER_NAME
+  guest_turn
 end
 
-def give_winner_a_round_point(rounds_won_card, winner_name)
-  rounds_won_card[winner_name] += 1
-end
-
-def there_is_winner(winner_name)
-  !!winner_name
-end
-
-def game_over(rounds_won_card, winner_name)
-  rounds_won_card[winner_name] == WINNING_ROUND_POINT
-end
-
-def display_round_scores(rounds_card)
-  prompt "Current Rounds Won:"
-  rounds_card.each do |name, score|
-    prompt "#{name}: #{score}"
-  end
-end
-
-def clear_screen
-  system('clear') || system('cls')
-end
-
-def get_card_suit(card)
-  card[1]
+def won_game?(winner_rounds)
+  winner_rounds == WINNING_ROUND_POINT
 end
 
 start_game
