@@ -2,51 +2,6 @@
 require 'yaml'
 STRINGS = YAML.load_file('tic_tac_toe_bonus_features.yml')
 
-module Message
-  def display_welcome_message
-    puts "Welcome to Tic Tac Toe!"
-    puts ""
-  end
-
-  def display_goodbye_message
-    puts "Thanks for playing!"
-  end
-
-  def display_winning_message(winner_name)
-    if winner_name
-      puts "#{winner_name} won!"
-    else
-      puts "It's a tie!"
-    end
-  end
-
-  def display_play_again_message
-    puts "Let's play again!"
-    puts ""
-  end
-
-  def display_marker_choice
-    puts "#{human.name} is a #{human.marker}. " \
-         "#{computer.name} is a #{computer.marker}"
-  end
-
-  def display_board
-    puts ""
-    board.display_board
-    puts ""
-  end
-
-  def display_rounds_won
-    puts "Current Rounds Won:"
-    puts "#{human.name}: #{score.retrieve(human.name)}"
-    puts "#{computer.name}: #{score.retrieve(computer.name)}"
-  end
-
-  def display_rounds_to_win
-    puts "Win #{TTTGame::ROUNDS_TO_WIN} rounds to win game."
-  end
-end
-
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
@@ -265,7 +220,6 @@ class Score
 end
 
 class TTTGame
-  include Message
   ROUNDS_TO_WIN = 5
   HUMAN_NAME = "Human"
   COMPUTER_NAME = "Bob Ross"
@@ -304,7 +258,7 @@ class TTTGame
     human_pick = O_MARKER
     loop do
       puts "Please select your marker (X or O)"
-      human_pick = gets.chomp
+      human_pick = gets.chomp.upcase
       break if [X_MARKER, O_MARKER].include? human_pick
       puts "Invalid selection. Choose again."
     end
@@ -324,15 +278,10 @@ class TTTGame
       display_board
       display_winning_message(winner?)
       display_rounds_won
-      break unless !won_game?
+      break unless !game_over?
       prompt_start_next_round
       reset
     end
-  end
-
-  def prompt_start_next_round
-    puts "Press enter to start next round."
-    gets.chomp
   end
 
   def play_round
@@ -343,8 +292,13 @@ class TTTGame
       display_board
     end
   end
+  
+  def prompt_start_next_round
+    puts "Press enter to start next round."
+    gets.chomp
+  end
 
-  def won_game?
+  def game_over?
     score.retrieve(human.name) == ROUNDS_TO_WIN ||
       score.retrieve(computer.name) == ROUNDS_TO_WIN
   end
@@ -354,6 +308,14 @@ class TTTGame
       human.name
     elsif board.winning_marker == computer.marker
       computer.name
+    end
+  end
+
+  def award_round(winner_name)
+    if winner_name == human.name
+      score.award(human.name, 1)
+    elsif winner_name == computer.name
+      score.award(computer.name, 1)
     end
   end
 
@@ -383,14 +345,6 @@ class TTTGame
     @current_marker == human.marker
   end
 
-  def award_round(winner_name)
-    if winner_name == human.name
-      score.award(human.name, 1)
-    elsif winner_name == computer.name
-      score.award(computer.name, 1)
-    end
-  end
-
   def reset_score
     score.reset(human.name)
     score.reset(computer.name)
@@ -410,6 +364,49 @@ class TTTGame
     clear
     display_marker_choice
     display_board
+  end
+  
+  def display_welcome_message
+    puts "Welcome to Tic Tac Toe!"
+    puts ""
+  end
+
+  def display_goodbye_message
+    puts "Thanks for playing!"
+  end
+
+  def display_winning_message(winner_name)
+    if winner_name
+      puts "#{winner_name} won!"
+    else
+      puts "It's a tie!"
+    end
+  end
+
+  def display_play_again_message
+    puts "Let's play again!"
+    puts ""
+  end
+
+  def display_marker_choice
+    puts "#{human.name} is a #{human.marker}. " \
+         "#{computer.name} is a #{computer.marker}"
+  end
+
+  def display_board
+    puts ""
+    board.display_board
+    puts ""
+  end
+
+  def display_rounds_won
+    puts "Current Rounds Won:"
+    puts "#{human.name}: #{score.retrieve(human.name)}"
+    puts "#{computer.name}: #{score.retrieve(computer.name)}"
+  end
+
+  def display_rounds_to_win
+    puts "Win #{TTTGame::ROUNDS_TO_WIN} rounds to win game."
   end
 end
 
