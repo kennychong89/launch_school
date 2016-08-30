@@ -292,7 +292,7 @@ class TTTGame
       display_board
     end
   end
-  
+
   def prompt_start_next_round
     puts "Press enter to start next round."
     gets.chomp
@@ -365,7 +365,7 @@ class TTTGame
     display_marker_choice
     display_board
   end
-  
+
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
     puts ""
