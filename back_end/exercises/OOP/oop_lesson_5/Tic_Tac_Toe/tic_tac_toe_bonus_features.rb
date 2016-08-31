@@ -1,7 +1,4 @@
 # frozen_string_literal: true
-require 'yaml'
-STRINGS = YAML.load_file('tic_tac_toe_bonus_features.yml')
-
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
@@ -51,22 +48,22 @@ class Board
     (1..9).each { |key| @squares[key] = Square.new }
   end
 
+  # rubocop:disable Metrics/AbcSize
   def display_board
-    puts create_display_board
+    puts "     |     |     "
+    puts "  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  "
+    puts "     |     |     "
+    puts "-----+-----+-----"
+    puts "     |     |     "
+    puts "  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  "
+    puts "     |     |     "
+    puts "-----+-----+-----"
+    puts "     |     |     "
+    puts "  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  "
+    puts "     |     |     "
   end
 
   private
-
-  def create_display_board
-    board = STRINGS['display_board'].clone
-
-    @squares.each do |num, square|
-      marker = square.marker
-      initial_marker = Square::INITIAL_MARKER
-      board.sub!("(#{num})", " #{marker} ") unless marker == initial_marker
-    end
-    board
-  end
 
   def three_identical_markers?(squares)
     markers = squares.select(&:marked?).collect(&:marker)
@@ -103,9 +100,6 @@ class Player
     @marker = marker
     @name = name
     @board = board
-  end
-
-  def pick
   end
 end
 
@@ -272,6 +266,7 @@ class TTTGame
   def run_game_loop
     loop do
       clear_screen_and_display_board
+      clear
       play_round
       award_round(winner?)
       display_marker_choice
