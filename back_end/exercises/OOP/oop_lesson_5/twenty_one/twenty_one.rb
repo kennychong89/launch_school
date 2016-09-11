@@ -4,6 +4,7 @@
 # Kenny Chong
 # 09/10/2016 9:24 PM
 
+require 'pry'
 class Card
   SUITS = { 'H' => 'Heart',
             'D' => 'Diamond',
@@ -24,14 +25,13 @@ class Card
   end
 
   def self.num_value(card_name)
-    num = if card_name == 'J' || card_name == 'Q' || card_name == 'K'
-            10
-          elsif card_name == 'A'
-            11
-          else
-            card_name.to_i
-          end
-    num
+    if card_name == 'J' || card_name == 'Q' || card_name == 'K'
+      10
+    elsif card_name == 'A'
+      11
+    else
+      card_name.to_i
+    end
   end
 
   def fancy_description
@@ -63,6 +63,7 @@ class Deck
 
   def put_back_cards
     @cards_drawn = 0
+    reset_ace_values
   end
 
   def draw_a_card
@@ -84,6 +85,10 @@ class Deck
       end
     end
     deck
+  end
+
+  def reset_ace_values
+    @deck.select { |card| card.name == "A" }.each { |ace| ace.value = 11 }
   end
 end
 
@@ -155,7 +160,7 @@ class Dealer < Participant
   HIT_LIMIT = 17
 
   def turn(deck)
-    while !Rules.busted?(hand_total) && !reached_hit_limit?
+    until Rules.busted?(hand_total) || reached_hit_limit?
       card = deck.draw_a_card
       add_to_hand(card)
       puts "#{name} has drawn an #{card.fancy_description}"
@@ -172,10 +177,10 @@ end
 
 class Player < Participant
   def turn(deck)
-    while !Rules.busted?(hand_total) && hit?
+    until Rules.busted?(hand_total) || !hit?
       card = deck.draw_a_card
       add_to_hand(card)
-      puts "#{name} has drawn a #{card.fancy_description}"
+      puts "#{name} has drawn an #{card.fancy_description}"
       puts "#{name}: #{show_hand} (total:#{hand_total})"
     end
   end
@@ -219,21 +224,29 @@ class Rules
   end
 
   def winner
-    winner = if Rules.busted?(player.hand_total)
-               dealer
-             elsif Rules.busted?(dealer.hand_total)
-               player
-             elsif player.hand_total > dealer.hand_total
-               player
-             elsif dealer.hand_total > player.hand_total
-               dealer
-             end
-    winner
+    return winner_by_bust unless winner_by_bust.nil?
+    return winner_by_total unless winner_by_total.nil?
+  end
+
+  def winner_by_bust
+    if Rules.busted?(player.hand_total)
+      dealer
+    elsif Rules.busted?(dealer.hand_total)
+      player
+    end
+  end
+
+  def winner_by_total
+    if player.hand_total > dealer.hand_total
+      player
+    elsif dealer.hand_total > player.hand_total
+      dealer
+    end
   end
 
   def loser
-    if !winner.nil?
-      return winner.name == dealer.name ? player : dealer
+    unless winner.nil?
+      winner.name == dealer.name ? player : dealer
     end
   end
 end
@@ -254,8 +267,7 @@ class Round
     loop do
       display_score
       setup
-      player_turn
-      dealer_turn
+      turn
       results
       rules.winner.award(1) if !!rules.winner
       break if game_over?
@@ -279,6 +291,11 @@ class Round
     gets.chomp
   end
 
+  def turn
+    player_turn
+    dealer_turn if !Rules.busted?(player.hand_total)
+  end
+
   def player_turn
     puts "=== Player's turn (#{player.name}) ==="
     player.turn(deck)
@@ -286,13 +303,11 @@ class Round
   end
 
   def dealer_turn
-    if !Rules.busted?(player.hand_total)
-      puts "=== Dealer's turn (#{dealer.name}) ==="
-      dealer.reveal_hand
-      dealer.turn(deck)
-      puts "#{dealer.name} stays" unless Rules.busted?(dealer.hand_total)
-      puts ""
-    end
+    puts "=== Dealer's turn (#{dealer.name}) ==="
+    dealer.reveal_hand
+    dealer.turn(deck)
+    puts "#{dealer.name} stays" unless Rules.busted?(dealer.hand_total)
+    puts ""
   end
 
   def setup_dealer
@@ -312,18 +327,21 @@ class Round
     puts "=== Draw 2 cards for each player and dealer ==="
     setup_dealer
     setup_player
-    puts "#{dealer.name}: #{dealer.show_hand} (total:?)"
-    puts "#{player.name}: #{player.show_hand} (total:#{player.hand_total})"
-    puts ""
+    show_hands(false)
   end
 
   def results
     puts "=== Round results ==="
     dealer.reveal_hand
     rules.results
-    puts "#{dealer.name}: #{dealer.show_hand} (total:#{dealer.hand_total})"
+    show_hands(true)
+  end
+
+  def show_hands(dealer_reveal)
+    dealer_total = dealer_reveal ? dealer.hand_total : "?"
+    puts "#{dealer.name}: #{dealer.show_hand} (total:#{dealer_total})"
     puts "#{player.name}: #{player.show_hand} (total:#{player.hand_total})"
-    puts ""
+    puts
   end
 
   def game_over?
@@ -358,14 +376,24 @@ class TwentyOne
     display_welcome_msg
     loop do
       round.play
-      puts "Do you want to play again? (type 'y' or 'n')?"
-      choice = gets.chomp.downcase
-      break unless choice == 'y'
+      decision = exit
+      break unless decision == 'y'
       round.reset
       player.reset_score
       dealer.reset_score
     end
     display_goodbye_msg
+  end
+
+  def exit
+    choice = nil
+    loop do
+      puts "Do you want to play again? (type 'y' or 'n')?"
+      choice = gets.chomp.downcase
+      break if %w(y n).include? choice
+      puts "Invalid input."
+    end
+    choice
   end
 
   def display_welcome_msg
