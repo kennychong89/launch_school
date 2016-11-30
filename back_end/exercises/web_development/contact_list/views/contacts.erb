@@ -1,0 +1,17 @@
+<a href="/contacts/add">New Contact</a>
+<h2>Your Contacts:</h2>
+<ul>
+<% contacts.each do |contact| %>
+  <li>
+      <a href="/contacts/user/<%= contact[:id] %>">
+        <%= contact[:first_name] + ", " + contact[:last_name] %>
+      </a>
+      <form action="/contacts/user/edit/<%= contact[:id] %>" method="get">
+          <button type="submit">Edit</button>
+      </form>
+      <form action="/contacts/user/remove/<%= contact[:id] %>" method="post">
+          <button type="submit">Delete</button>
+      </form>
+  </li>
+<% end %>   
+</ul>

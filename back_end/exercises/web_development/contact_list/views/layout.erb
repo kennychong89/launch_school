@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <title>Contact List</title>
+    </head>
+    <body>
+        <% if session[:error] %>
+          <p><%= session.delete(:error) %></p>
+        <% end %>
+        
+        <% if session[:message] %>
+          <p><%= session.delete(:message) %></p>
+        <% end %>
+        
+        <% if logged_in? %>
+          <form action="/signout" method="post">
+              Signed in as <%= username %>.
+              <button>Sign Out</button>
+          </form>
+        <% end %>
+        
+        <header>
+            <% if session[:username] %>
+            <h1><%= session[:username] %>'s Contact List</h1>
+            <% else %>
+            <h1>Contact List</h1>
+            <% end %>
+        </header>
+        <main>
+            <%= yield %>
+        </main>
+    </body>
+</html>

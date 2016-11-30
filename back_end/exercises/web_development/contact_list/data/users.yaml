@@ -1,0 +1,46 @@
+---
+- :username: kennychong89
+  :password: '12345'
+  :contacts:
+  - :id: '1'
+    :first_name: Kes
+    :last_name: Chong
+    :email: kennychong89@gmail.com
+    :home_phone: '3475514082'
+    :cell_phone: '3475514082'
+    :work_phone: '3475514082'
+    :address_one: 17-38 150 street
+    :address_two: ''
+    :city: Whitestone
+    :zipcode: '11357'
+    :notes: ''
+  - :id: '2'
+    :first_name: Kevin
+    :last_name: Edmoud
+    :email: ''
+    :home_phone: ''
+    :cell_phone: ''
+    :work_phone: ''
+    :address_one: 92Y RESIDENCE 1395 LEXINGTON AVENUE
+    :address_two: ''
+    :city: NEW YORK
+    :zipcode: '10128'
+    :notes: ''
+  - :id: '3'
+    :first_name: Amanda
+    :last_name: ''
+    :email: meowmeowmixer2003@yahoo.com
+    :home_phone: ''
+    :cell_phone: ''
+    :work_phone: ''
+    :address_one: ''
+    :address_two: ''
+    :city: ''
+    :zipcode: ''
+    :notes: ''
+- :username: kevins123
+  :password: '4321'
+  :contacts: []
+- :username: doggman
+  :password: wedidit
+  :contacts: []

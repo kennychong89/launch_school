@@ -1,0 +1,43 @@
+<h2>Enter New Contact</h2>
+<form action="/contacts" method="post">
+  <label for="first_name">*First Name:</label>
+  <input name="first_name" placeholder="First Name" type="text" value="<%= params[:first_name] %>">
+  <label for="last_name">Last Name:</label>
+  <input name="last_name" placeholder="Last Name" type="text" value="<%= params[:last_name] %>" >
+  <br><br>
+  <label for="email">E-mail:</label>
+  <input name="email" placeholder="E-mail Address" type="email" value="<%= params[:email] %>" >
+  <br><br>
+  <label for="home_phone">Home Phone:</label>
+  <input name="home_phone" placeholder="Home Phone Number" type="text" value="<%= params[:home_phone] %>" >
+  <br>
+  <label for="cell_phone">Cell Phone:</label>
+  <input name="cell_phone" placeholder="Cell Phone Number" type="text" value="<%= params[:cell_phone] %>" >
+  <br>
+  <label for="work_phone">Work Phone:</label>
+  <input name="work_phone" placeholder="Work Phone Number" type="text" value="<%= params[:work_phone] %>" >
+  <br><br>
+  <label for="address_one">Address 1:</label>
+  <input name="address_one" type="text" value="<%= params[:address_one] %>" >
+  <br>
+  <label for="address_two">Address 2:</label>
+  <input name="address_two" type="text" value="<%= params[:address_two] %>" >
+  <br><br>
+  <label for="city">City:</label>
+  <input name="city" type="text" value="<%= params[:city] %>" >
+  <br>
+  <label for="state">State:</label>
+  <input name="state" type="text" value="<%= params[:state] %>" >
+  <br>
+  <label for="country">Country:</label>
+  <input name="country" type="text" value="<%= params[:country] %>" >
+  <br>
+  <label for="zipcode">Zipcode:</label>
+  <input name="zipcode" type="text" value="<%= params[:zipcode] %>" >
+  <br><br>
+  <label for="notes">Notes:</label>
+  <br>
+  <textarea rows="20" cols="50" name="notes"><%= params[:notes] %></textarea>
+  <br>
+  <input type="submit" value="Create New Contact">
+</form>
